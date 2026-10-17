@@ -2,6 +2,11 @@
 FourD = FourD or {}
 
 FourD.NW_KEY = "fourd_t"
+FourD.ROT_NW_KEY = "fourd_r"      -- R4 als String (siehe FourD.Math.Serialize)
+
+-- Dicke d jedes Objekts in w (Körper = 3D-Modell × [−d/2, d/2]). Repliziert, nur Darstellung.
+CreateConVar("fourd_thickness", "2", { FCVAR_ARCHIVE, FCVAR_REPLICATED },
+    "Dicke der Objekte in der 4. Dimension (Einheiten)", 0, 4096)
 
 -- Liefert die 4. Koordinate t eines Entities. Server: aus der Tracking-Tabelle,
 -- Client: aus der NW2-Variable. Ungültige oder (noch) nicht zugewiesene Entities -> 0.

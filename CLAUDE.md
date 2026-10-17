@@ -8,7 +8,8 @@
 - Einzeiler auf dem Server: `./tools/rcon.py "lua_run print(physenv.GetGravity())"`
 
 ## Layout
-- `lua/autorun/fourd_init.lua` Loader · `lua/fourd/{sh,sv,cl}_*.lua` Kern (`FourD`-Global, 4. Koordinate `t`)
+- `lua/autorun/fourd_init.lua` Loader · `lua/fourd/{sh,sv,cl}_*.lua` Kern (`FourD`-Global, 4. Koordinate `t`, 4D-Orientierung `R4`: `sh_fourd_math`, `sv_fourd_rot`, `cl_fourd_rot`)
+- `lua/weapons/fourd_physgun/` SWEP „FourD Physgun“ (E + Maus = Drehung in w-Ebenen) · Doku `docs/fourd-rotation.md`
 - `lua/tests/fourd/` GLuaTest-Specs (nicht im Workshop-Paket)
 
 ## Regeln
