@@ -4,7 +4,6 @@ FourD = FourD or {}
 FourD.ClTracked = FourD.ClTracked or {}   -- ent -> true, solange R4 nicht die Identität ist
 
 local M = FourD.Math
-local abs, sqrt = math.abs, math.sqrt
 
 local cvSlice = CreateClientConVar("fourd_cl_slice", "1", true, false,
     "Schnitt gedrehter Objekte annähernd darstellen (0 = aus)", 0, 1)
@@ -31,24 +30,11 @@ end
 
 -- Affine Abbildung entlang n̂, die [lo, hi] auf das Schnittintervall [x0, x1] legt.
 -- Näherung: ignoriert die Scherung bei Doppeldrehungen und spiegelt nicht (c4 < 0).
-local function sliceMatrix(ent, r)
-    local m = M.ToMatrix(r)
-    local nx, ny, nz, c4 = m[4][1], m[4][2], m[4][3], m[4][4]
-    local s = sqrt(nx * nx + ny * ny + nz * nz)
-    if s < 1e-6 then
-        nx, ny, nz = 1, 0, 0
-    else
-        nx, ny, nz = nx / s, ny / s, nz / s
-    end
+local function sliceMatrix(ent, r, tEnt)
+    local mins, maxs = FourD.BodyBounds(ent)
+    local s, c4, nx, ny, nz, lo, hi = FourD.SliceAxis(r, mins, maxs)
 
-    local mins, maxs = ent:OBBMins(), ent:OBBMaxs()
-    local cx, cy, cz = (mins.x + maxs.x) / 2, (mins.y + maxs.y) / 2, (mins.z + maxs.z) / 2
-    local ex, ey, ez = (maxs.x - mins.x) / 2, (maxs.y - mins.y) / 2, (maxs.z - mins.z) / 2
-    local mid = cx * nx + cy * ny + cz * nz
-    local half = abs(ex * nx) + abs(ey * ny) + abs(ez * nz)
-    local lo, hi = mid - half, mid + half
-
-    local delta = FourD.Get(ent) - FourD.Get(LocalPlayer())
+    local delta = tEnt - FourD.Get(LocalPlayer())
     local halfD = (cvThickness and cvThickness:GetFloat() or 0) / 2
     local x0, x1 = M.SliceInterval(s, c4, delta, lo, hi, halfD)
 
@@ -81,7 +67,16 @@ local function update(ent)
         if M.IsIdentity(r) then FourD.ClTracked[ent] = nil end
         return
     end
-    ent:EnableMatrix("RenderMultiply", sliceMatrix(ent, r))
+    ent:EnableMatrix("RenderMultiply", sliceMatrix(ent, r, FourD.Get(ent)))
+end
+
+-- Schnitt für Entities ohne NW2-Werte (clientseitige Ragdolls, cl_fourd_npc).
+function FourD.ClApplySlice(ent, r, tEnt)
+    if M.IsIdentity(r) or not cvSlice:GetBool() then
+        resetMatrix(ent)
+        return
+    end
+    ent:EnableMatrix("RenderMultiply", sliceMatrix(ent, r, tEnt))
 end
 
 hook.Add("EntityNetworkedVarChanged", "fourd_rot_track", function(ent, name)

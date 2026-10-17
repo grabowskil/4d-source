@@ -1,6 +1,8 @@
 -- Ohne verbundene Spieler dient ein npc_combine_s als Spieler-Ersatz: FourD.IsPhaseActor und
 -- FourD.PhaseActors werden pro Fall ersetzt und in afterEach wiederhergestellt.
 
+local M = FourD.Math
+
 local function spawn(class, pos)
     local ent = ents.Create(class)
     ent:SetPos(pos)
@@ -46,6 +48,7 @@ return {
 
     afterEach = function(state)
         FourD.IsPhaseActor, FourD.PhaseActors = state.isActor, state.actors
+        if IsValid(state.prop) then state.prop:Remove() end
         if IsValid(state.npc) then state.npc:Remove() end
         if IsValid(state.sub) then state.sub:Remove() end
     end,
@@ -105,6 +108,54 @@ return {
                 expect(npc:Disposition(sub)).to.equal(D_NU)
                 FourD.Set(sub, 0)
                 expect(npc:Disposition(sub)).to.equal(state.orig)
+            end
+        },
+        {
+            name = "Gedreht entscheidet der Schnitt: 90° in xw holt Δt = 5 in Phase",
+            func = function(state)
+                local npc, sub = state.npc, state.sub
+                FourD.Set(npc, 5)
+                expect(npc:Disposition(sub)).to.equal(D_NU)
+                expect(FourD.SetRot(npc, M.Plane(1, 4, math.rad(90)))).to.beTrue()
+                expect(FourD.EntsInPhase(npc, sub)).to.beTrue()
+                expect(npc:Disposition(sub)).to.equal(state.orig)
+                expect(FourD.SetRot(npc, M.Identity())).to.beTrue()
+                expect(npc:Disposition(sub)).to.equal(D_NU)
+            end
+        },
+        {
+            name = "Schaden über Owner des Inflictors (Projektil) wird zugeordnet und blockiert",
+            func = function(state)
+                local npc, sub = state.npc, state.sub
+                local prop = ents.Create("prop_physics")
+                prop:SetModel("models/props_junk/PopCan01a.mdl")
+                prop:SetPos(Vector(0, 300, 100))
+                prop:SetOwner(sub)
+                prop:Spawn()
+                state.prop = prop
+
+                FourD.Set(npc, 10)
+                local dmg = damage(npc, prop, 5)
+                expect(FourD.DamageSource(npc, dmg)).to.equal(sub)
+                expect(hook.Run("EntityTakeDamage", npc, dmg)).to.beTrue()
+            end
+        },
+        {
+            name = "Neues Entity mit Owner erbt dessen t",
+            async = true,
+            timeout = 2,
+            func = function(state)
+                FourD.Set(state.npc, 10)
+                local prop = ents.Create("prop_physics")
+                prop:SetModel("models/props_junk/PopCan01a.mdl")
+                prop:SetPos(Vector(0, -300, 100))
+                prop:SetOwner(state.npc)
+                prop:Spawn()
+                state.prop = prop
+                timer.Simple(0.2, function()
+                    expect(FourD.Get(prop)).to.equal(10)
+                    done()
+                end)
             end
         },
         {

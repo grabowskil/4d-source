@@ -73,16 +73,58 @@ function FourD.NpcBlocksDamage(target, attacker)
     return FourD.IsPhasedPair(target, attacker) and not FourD.EntsInPhase(target, attacker)
 end
 
--- Feuert auch bei der ersten Zuweisung (FourD.Assign), also für jedes neue NPC und jeden Spieler.
-hook.Add("FourD_Changed", "fourd_npc_changed", function(ent)
-    if not IsValid(ent) or not (ent:IsNPC() or FourD.IsPhaseActor(ent)) then return end
+-- Verursacher, der mit target ein Phasen-Paar bildet: Angreifer, Inflictor oder deren Owner
+-- (Granaten, Raketen und Waffen tragen NPC bzw. Spieler oft nur als Owner). Sonst nil.
+function FourD.DamageSource(target, dmg)
+    local attacker, inflictor = dmg:GetAttacker(), dmg:GetInflictor()
+    local candidates = {
+        attacker, inflictor,
+        IsValid(attacker) and attacker:GetOwner() or NULL,
+        IsValid(inflictor) and inflictor:GetOwner() or NULL,
+    }
+    for _, ent in ipairs(candidates) do
+        if FourD.IsPhasedPair(target, ent) then return ent end
+    end
+end
+
+local function onPhaseChange(ent)
+    if not IsValid(ent) or not (FourD.IsPhaseBody(ent) or FourD.IsPhaseActor(ent)) then return end
+    FourD.WarmBodyBounds(ent)
     ent:SetCustomCollisionCheck(true)
     ent:CollisionRulesChanged()
     syncEnt(ent)
+end
+
+-- Feuert auch bei der ersten Zuweisung (FourD.Assign), also für jedes neue Entity. Dabei erbt
+-- ein Entity mit Owner (Waffe, Granate, Rakete) dessen t, damit Projektile in dessen Phase bleiben.
+hook.Add("FourD_Changed", "fourd_npc_changed", function(ent, old)
+    if old == nil and IsValid(ent) then
+        local owner = ent:GetOwner()
+        if IsValid(owner) and FourD.Get(owner) ~= FourD.Get(ent) then
+            FourD.Set(ent, FourD.Get(owner))    -- feuert erneut, dann mit old ~= nil
+            return
+        end
+    end
+    onPhaseChange(ent)
+end)
+
+-- R4 zählt nur beim Körper (der Betrachter wird als ungedreht behandelt).
+hook.Add("FourD_Rotated", "fourd_npc_rotated", function(ent)
+    if IsValid(ent) and FourD.IsPhaseBody(ent) then onPhaseChange(ent) end
 end)
 
 hook.Add("EntityTakeDamage", "fourd_npc_damage", function(target, dmg)
-    if FourD.NpcBlocksDamage(target, dmg:GetAttacker()) then return true end
+    local src = FourD.DamageSource(target, dmg)
+    if src and FourD.NpcBlocksDamage(target, src) then return true end
+end)
+
+-- Server-Ragdolls bleiben in der Phase des NPCs (t, R4) und verhalten sich wie dieser.
+hook.Add("CreateEntityRagdoll", "fourd_npc_ragdoll", function(owner, ragdoll)
+    if not IsValid(owner) or not IsValid(ragdoll) or not owner:IsNPC() then return end
+    ragdoll:SetNW2Bool(FourD.BODY_NW_KEY, true)
+    FourD.Set(ragdoll, FourD.Get(owner))
+    local r = FourD.GetRot(owner)
+    if not FourD.Math.IsIdentity(r) then FourD.SetRot(ragdoll, r) end
 end)
 
 hook.Add("EntityRemoved", "fourd_npc_cleanup", function(ent)
@@ -97,11 +139,16 @@ end)
 -- Abfrage statt cvars.AddChangeCallback, weil dessen Callbacks laut Wiki nicht in jedem Fall feuern.
 local lastThickness = FourD.Thickness()
 timer.Create("fourd_npc_thickness", 1, 0, function()
+    -- Hitbox-Box nachholen, wo sie beim ersten Versuch fehlte (Bones direkt nach dem Spawn).
+    forEachNpc(function(npc)
+        if FourD.WarmBodyBounds(npc) then onPhaseChange(npc) end
+    end)
+
     local d = FourD.Thickness()
     if d == lastThickness then return end
     lastThickness = d
     for _, ent in ipairs(ents.GetAll()) do
-        if ent:IsNPC() or FourD.IsPhaseActor(ent) then ent:CollisionRulesChanged() end
+        if FourD.IsPhaseBody(ent) or FourD.IsPhaseActor(ent) then ent:CollisionRulesChanged() end
     end
     FourD.NpcSyncAll()
 end)
