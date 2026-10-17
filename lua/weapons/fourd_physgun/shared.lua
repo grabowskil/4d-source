@@ -2,7 +2,8 @@
 SWEP.PrintName = "FourD Physgun"
 SWEP.Author = "MyPhys"
 SWEP.Category = "FourD"
-SWEP.Instructions = "Links: greifen · Mausrad: Abstand · E + Maus: 4D-Drehung (Shift: 45°) · R: R4 zurücksetzen"
+SWEP.Instructions = "Links: greifen · Mausrad: Abstand · E + Maus: 4D-Drehung (Shift: 45°) · R: R4 zurücksetzen\n"
+    .. "Rechts halten: Ziel wählen · + Mausrad: t ±0,5 (Shift ±0,1) · + R: t = eigenes t · + E + Maus: drehen"
 SWEP.Spawnable = true
 SWEP.AdminOnly = false
 SWEP.Base = "weapon_base"
@@ -22,8 +23,15 @@ SWEP.Secondary.Ammo = "none"
 
 function SWEP:SetupDataTables()
     self:NetworkVar("Entity", 0, "HeldEnt")
+    self:NetworkVar("Entity", 1, "ShiftEnt")  -- per Rechtsklick gewähltes Ziel (t verschieben)
     self:NetworkVar("Float", 0, "DragX")     -- akkumulierte Drag-Winkel (Grad), nur Anzeige
     self:NetworkVar("Float", 1, "DragY")
+end
+
+-- Nach lua_refresh fehlen bei schon existierenden Waffen neue NetworkVar-Accessoren
+-- (SetupDataTables läuft nur beim Erzeugen). Bis zum Neuausrüsten dann ohne Shift-Ziel.
+function SWEP:GetShiftTarget()
+    return self.GetShiftEnt and self:GetShiftEnt() or NULL
 end
 
 function SWEP:Initialize()
