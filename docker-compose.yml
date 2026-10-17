@@ -1,29 +1,36 @@
-# Linux-Dev-Server (srcds) für den Mac: läuft unter OrbStack/Docker als linux/amd64 via Rosetta.
-# Vom Mac-Client: connect 127.0.0.1:27015
+# Linux-Dev-Server (srcds) für den Mac: läuft unter Docker Desktop/OrbStack als linux/amd64 via Rosetta.
+# Vom Mac-Client: connect <LAN-IP des Macs>:27115   (z. B. 192.168.0.230:27115, siehe README)
+#
+# Netzwerk-Fallstricke auf dem Mac (alle am 2026-10-17 beobachtet):
+# - Host-Port ≠ 27015: der laufende GMod-Client belegt UDP 27015 selbst; 27005 ist der Client-Port.
+# - sv_lan 0: Docker Desktop schreibt die Absender-IP weitergeleiteter UDP-Pakete auf eine
+#   öffentliche Adresse um – mit sv_lan 1 lehnt srcds den Client als „nicht lokal“ ab.
+# - RCON (TCP) nur an 127.0.0.1 binden, das Dev-Passwort ist schwach. UDP muss auf der LAN-IP
+#   erreichbar sein, weil GMod-Verbindungen über 127.0.0.1 bei uns nie im Container ankamen.
 services:
   gmod:
     image: ceifa/garrysmod:debian-x64     # gleicher Branch wie der Mac-Client (x86-64), "not stable yet"
     platform: linux/amd64
-    ports: ["27015:27015/udp", "27015:27015/tcp", "27005:27005/udp"]
+    ports: ["27115:27015/udp", "127.0.0.1:27115:27015/tcp"]
     environment:
       PRODUCTION: "0"                     # Hot-Reload an
       GAMEMODE: sandbox
       MAP: gm_construct
       MAXPLAYERS: "4"
-      ARGS: "-condebug +sv_lan 1 +rcon_password devonly"
+      ARGS: "-condebug +sv_lan 0 +hide_server 1 +rcon_password devonly"
     volumes:
       - ./:/home/gmod/server/garrysmod/addons/myphys
       - ./.dev/data:/home/gmod/server/garrysmod/data
 
   # Optional: zweiter Server mit VPhysics-Jolt zum Vergleich.
-  # Start: docker compose --profile jolt up -d gmod-jolt   ·   connect 127.0.0.1:27016
+  # Start: docker compose --profile jolt up -d gmod-jolt   ·   connect <LAN-IP>:27016
   gmod-jolt:
     profiles: ["jolt"]
     build:
       context: docker
       dockerfile: Dockerfile.jolt
     platform: linux/amd64
-    ports: ["27016:27016/udp", "27016:27016/tcp"]
+    ports: ["27016:27016/udp", "127.0.0.1:27016:27016/tcp"]
     environment:
       PRODUCTION: "0"
       AUTOUPDATE: "0"                     # sonst kann das Steam-Update die Jolt-vphysics überschreiben
@@ -31,7 +38,7 @@ services:
       GAMEMODE: sandbox
       MAP: gm_construct
       MAXPLAYERS: "4"
-      ARGS: "-condebug +sv_lan 1 +rcon_password devonly"
+      ARGS: "-condebug +sv_lan 0 +hide_server 1 +rcon_password devonly"
     volumes:
       - ./:/home/gmod/server/garrysmod/addons/myphys
       - ./.dev/data-jolt:/home/gmod/server/garrysmod/data

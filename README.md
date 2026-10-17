@@ -21,7 +21,20 @@ docker compose up -d gmod          # Dev-Server, Repo ist als addons/myphys gemo
 ./tools/test.sh lua/tests/myphys/sv_util_spec.lua
 ```
 
-Im GMod-Client: `connect 127.0.0.1:27015`. Danach im Spawnmenü unter *Entities → MyPhys* den Schwimmkörper spawnen. Unter *Tools → MyPhys* liegt der Physik-Tuner.
+Im GMod-Client verbindest du dich über die **LAN-IP des Macs** (`ipconfig getifaddr en0`), zum Beispiel:
+
+```text
+connect 192.168.0.230:27115
+```
+
+Danach im Spawnmenü unter *Entities → MyPhys* den Schwimmkörper spawnen. Unter *Tools → MyPhys* liegt der Physik-Tuner.
+
+Beim ersten Verbinden fragt ein Popup nach Zugriff aufs lokale Netzwerk, das musst du bestätigen. Folgende Fallstricke haben wir beobachtet:
+
+- `127.0.0.1` funktioniert nicht: Die Pakete von GMod kamen über Loopback nie im Container an, auch nicht über Port 27115.
+- Port 27015 ist auf dem Mac belegt: Den hält der GMod-Client selbst. Deshalb nutzt der Dev-Server 27115.
+- `sv_lan 0` ist nötig: Docker Desktop schreibt die Absender-IP auf eine öffentliche Adresse um, und mit `sv_lan 1` kommt sonst „LAN-Server sind nur für lokale Clients verfügbar“. `hide_server 1` hält den Server aus dem öffentlichen Serverbrowser heraus.
+- RCON hört nur auf `127.0.0.1:27115/tcp`.
 
 Ändern sich Dateien auf dem Mac, lädt der Server sie per Auto-Refresh (inotify) neu. Ob die Events durch den Bind-Mount in die VM gelangen, ist **ungeprüft**. Greift es nicht, lädst du so neu:
 

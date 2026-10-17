@@ -2,7 +2,7 @@
 """Minimaler Source-RCON-Client (nur Standardbibliothek).
 
 Nutzung:  tools/rcon.py "lua_run print(physenv.GetGravity())"
-Env:      RCON_HOST (127.0.0.1), RCON_PORT (27015), RCON_PASSWORD (devonly)
+Env:      RCON_HOST (127.0.0.1), RCON_PORT (27115), RCON_PASSWORD (devonly)
 """
 import os
 import socket
@@ -43,7 +43,7 @@ def main():
         return 64
 
     host = os.environ.get("RCON_HOST", "127.0.0.1")
-    port = int(os.environ.get("RCON_PORT", "27015"))
+    port = int(os.environ.get("RCON_PORT", "27115"))
     password = os.environ.get("RCON_PASSWORD", "devonly")
     command = " ".join(sys.argv[1:])
 
