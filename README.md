@@ -36,7 +36,14 @@ Beim ersten Verbinden fragt ein Popup nach Zugriff aufs lokale Netzwerk, das mus
 - `sv_lan 0` ist nötig: Docker Desktop schreibt die Absender-IP auf eine öffentliche Adresse um, und mit `sv_lan 1` kommt sonst „LAN-Server sind nur für lokale Clients verfügbar“. `hide_server 1` hält den Server aus dem öffentlichen Serverbrowser heraus.
 - RCON hört nur auf `127.0.0.1:27115/tcp`.
 
-Ändern sich Dateien auf dem Mac, lädt der Server sie per Auto-Refresh (inotify) neu. Ob die Events durch den Bind-Mount in die VM gelangen, ist **ungeprüft**. Greift es nicht, lädst du so neu:
+Speicherst du eine Datei auf dem Mac, lädt der Server sie per Auto-Refresh (inotify) neu. Client-Dateien schickt er auch an verbundene Clients. Das ist mit Docker Desktop **geprüft** (17.10.2026): Ein Edit an `cl_hud.lua` lief nach wenigen Sekunden im verbundenen Mac-Client, ohne Reconnect. Ein paar Hinweise dazu:
+
+- Pro Speichervorgang kann die Datei mehrfach laufen, deshalb muss der Code refresh-sicher sein.
+- Bei offener Konsole oder ohne Fenster-Fokus zeigt GMod auf dem Mac teils ein veraltetes Bild.
+
+Ob eine Datei neu geladen wurde, prüfst du am einfachsten mit einer temporären `print`-Zeile, die im Client-`console.log` auftaucht.
+
+Greift Auto-Refresh nicht, lädst du so neu:
 
 ```bash
 ./tools/reload.sh lua/myphys/sv_core.lua
