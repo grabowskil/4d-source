@@ -1,6 +1,8 @@
 # 4d-source: FourD
 
 Garry's-Mod-Physikaddon (GLua) mit einer vierten Raumdimension. Jedes Entity hat eine 4. Koordinate `t` und eine 4D-Orientierung `R4`. Die **FourD Physgun** verschiebt Props und NPCs in `w` und dreht sie in den w-Ebenen. Was nicht „in Phase“ ist, wird ausgeblendet oder als 3D-Schnitt gezeigt und kann weder treffen noch kollidieren. Das Repo ist zugleich der Addon-Ordner.
+
+**Steam Workshop:** [FourD (3821760241)](https://steamcommunity.com/sharedfiles/filedetails/?id=3821760241)
 Entwickelt wird auf dem Mac, getestet auf einem Linux-srcds im Container. Lint, Tests und der Workshop-Upload laufen in GitHub Actions.
 
 | Ebene | Komponente | Aufgabe |
@@ -102,8 +104,8 @@ tools/                                 lint, log, test, rcon, reload, package
 ## Release
 
 1. `workshop/icon.jpg` (512×512, Baseline-JPEG) ist ein Platzhalter und darf ersetzt werden.
-2. Mach den Erst-Upload einmal lokal mit `./tools/package.sh` und `fastgmad publish …`. Ohne fastgmad gehen auch `gmad` und `gmpublish` aus dem GMod-Client (`GarrysMod_Signed.app/Contents/MacOS/`). Dabei entsteht die Workshop-ID.
-3. Trag im Repo die Variable `WORKSHOP_ID` und die Secrets `STEAM_USERNAME` und `STEAM_VDF` ein. Ab dann lädt jedes GitHub-Release automatisch hoch.
+2. Erledigt, die Workshop-ID ist `3821760241`. Für neue Items gilt: Mach den Erst-Upload einmal lokal mit `./tools/package.sh` und `fastgmad publish …`. Ohne fastgmad gehen auch `gmad` und `gmpublish` aus dem GMod-Client (`GarrysMod_Signed.app/Contents/MacOS/`). Dabei entsteht die Workshop-ID.
+3. Die Repo-Variable `WORKSHOP_ID` ist gesetzt. Fehlen noch die Secrets `STEAM_USERNAME` und `STEAM_VDF`; erst mit ihnen lädt jedes GitHub-Release automatisch hoch, ohne sie schlägt der Release-Job fehl.
 
 ## Optional: VPhysics-Jolt
 
