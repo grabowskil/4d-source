@@ -1,0 +1,6 @@
+# Dev-Server mit VPhysics-Jolt ("Volt"), nur Linux64.
+# Vorher: Linux64-Release-Zip von https://github.com/misyltoad/VPhysics-Jolt/releases
+# nach docker/jolt/ entpacken (Ordner ist gitignored).
+# (Ableitung) Zielpfad = Spiel-Root des ceifa-Images; vor Nutzung prüfen. Aktiv? Konsole: vjolt_
+FROM ceifa/garrysmod:debian-x64
+COPY jolt/ /home/gmod/server/

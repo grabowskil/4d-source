@@ -1,0 +1,22 @@
+name: Release to Workshop
+
+# Voraussetzungen (einmalig):
+#  - Erst-Upload lokal mit fastgmad publish → Workshop-ID als Repo-Variable WORKSHOP_ID
+#  - Secrets STEAM_USERNAME und STEAM_VDF (base64-codierte SteamCMD-config.vdf, eigener CI-Account empfohlen)
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    if: vars.WORKSHOP_ID != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: gmod-workshop/workshop-upload@v1
+        with:
+          id: ${{ vars.WORKSHOP_ID }}
+          username: ${{ secrets.STEAM_USERNAME }}
+          vdf: ${{ secrets.STEAM_VDF }}
+          dir: .
+          changelog: ${{ github.event.release.body }}

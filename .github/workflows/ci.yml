@@ -1,0 +1,17 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  lint:
+    uses: FPtje/GLuaFixer/.github/workflows/glualint.yml@master
+    with:
+      config: glualint.json
+
+  test:
+    uses: CFC-Servers/GLuaTest/.github/workflows/run_tests.yml@main
+    with:
+      branch: x86-64          # gleicher Branch wie Mac-Client und Dev-Server

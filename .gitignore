@@ -1,0 +1,17 @@
+# Lokale Laufzeitdaten (Server-data, GLuaTest-Checkout, Logs)
+.dev/
+build/
+*.gma
+
+# VPhysics-Jolt-Binaries (über GitHub Releases beziehen, nie committen)
+docker/jolt/
+
+# Claude Code: persönliche Overrides und Debug-Logs
+.claude/settings.local.json
+claude-debug.txt
+
+# Steam-Credentials
+config.vdf
+ssfn*
+
+.DS_Store

@@ -1,0 +1,9 @@
+{
+  "$schema": "https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json",
+  "runtime.version": "LuaJIT",
+  "runtime.nonstandardSymbol": ["continue", "&&", "||", "!=", "!", "//"],
+  "runtime.special": { "include": "dofile", "IncludeCS": "dofile" },
+  "workspace.library": ["${addons}/garrysmod/module/library"],
+  "workspace.checkThirdParty": false,
+  "diagnostics.globals": ["MyPhys", "ENT", "TOOL", "expect"]
+}

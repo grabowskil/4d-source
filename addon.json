@@ -1,0 +1,20 @@
+{
+  "title": "MyPhys",
+  "type": "tool",
+  "tags": ["build", "realism"],
+  "ignore": [
+    "*.md",
+    ".git*",
+    ".claude*",
+    ".vscode*",
+    ".luarc.json",
+    "glualint.json",
+    "lua/tests*",
+    "docker*",
+    "docs*",
+    "tools*",
+    "build*",
+    ".dev*",
+    "workshop*"
+  ]
+}
