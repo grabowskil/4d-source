@@ -8,15 +8,14 @@
 - Einzeiler auf dem Server: `./tools/rcon.py "lua_run print(physenv.GetGravity())"`
 
 ## Layout
-- `lua/autorun/myphys_init.lua` Loader · `lua/myphys/{sh,sv,cl}_*.lua` Kern
-- `lua/entities/myphys_float/` SENT mit Motion Controller · `lua/weapons/gmod_tool/stools/` STOOLs
-- `lua/tests/myphys/` GLuaTest-Specs (nicht im Workshop-Paket)
+- `lua/autorun/fourd_init.lua` Loader · `lua/fourd/{sh,sv,cl}_*.lua` Kern (`FourD`-Global, 4. Koordinate `t`)
+- `lua/tests/fourd/` GLuaTest-Specs (nicht im Workshop-Paket)
 
 ## Regeln
 - Keine GLua-Aliasse (`!=`, `&&`, `||`, `!`, `//`, `/* */`) – nur Standard-Lua-Syntax.
 - Realm per Präfix: `sv_` Server, `cl_` Client, `sh_` beides. Client-Dateien brauchen `AddCSLuaFile`.
 - Jede net-Message: `util.AddNetworkString` serverseitig; Sender + Argumente validieren.
-- Refresh-sicher: Globals als `X = X or {}`, Hooks mit eindeutiger ID `myphys_*`.
+- Refresh-sicher: Globals als `X = X or {}`, Hooks mit eindeutiger ID `fourd_*`.
 - Physikobjekte NUR serverseitig erzeugen.
 - Auftrieb/`AddSurfaceData` fehlen auf x86-64 → eigene Kraftmodelle per Motion Controller.
 - API nicht raten: vor jeder unbekannten Funktion Skill `glua` oder wiki.facepunch.com prüfen (Agent `wiki-researcher`).
