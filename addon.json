@@ -1,7 +1,10 @@
 {
-  "title": "MyPhys",
-  "type": "tool",
-  "tags": ["build", "realism"],
+  "title": "FourD",
+  "type": "weapon",
+  "tags": [
+    "fun",
+    "build"
+  ],
   "ignore": [
     "*.md",
     ".git*",
@@ -15,6 +18,7 @@
     "tools*",
     "build*",
     ".dev*",
-    "workshop*"
+    "workshop*",
+    "LICENSE"
   ]
 }
