@@ -2,8 +2,8 @@
 SWEP.PrintName = "FourD Physgun"
 SWEP.Author = "MyPhys"
 SWEP.Category = "FourD"
-SWEP.Instructions = "Links: greifen · Mausrad: Abstand · E + Maus: 4D-Drehung (Shift: 45°) · R: R4 zurücksetzen\n"
-    .. "Rechts halten: Ziel wählen · + Mausrad: t ±0,5 (Shift ±0,1) · + R: t = eigenes t · + E + Maus: drehen"
+SWEP.Instructions = "Left: grab · Mouse wheel: distance · E + mouse: 4D rotation (Shift: 45°) · R: reset R4\n"
+    .. "Hold right: select target · + mouse wheel: t ±0.5 (Shift ±0.1) · + R: t = own t · + E + mouse: rotate"
 SWEP.Spawnable = true
 SWEP.AdminOnly = false
 SWEP.Base = "weapon_base"

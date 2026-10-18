@@ -1,51 +1,51 @@
 # 4d-source: FourD
 
-Garry's-Mod-Physikaddon (GLua) mit einer vierten Raumdimension. Jedes Entity hat eine 4. Koordinate `t` und eine 4D-Orientierung `R4`. Die **FourD Physgun** verschiebt Props und NPCs in `w` und dreht sie in den w-Ebenen. Was nicht „in Phase“ ist, wird ausgeblendet oder als 3D-Schnitt gezeigt und kann weder treffen noch kollidieren. Das Repo ist zugleich der Addon-Ordner.
+Garry's Mod physics addon (GLua) that adds a fourth spatial dimension. Every entity has a 4th coordinate `t` and a 4D orientation `R4`. The **FourD Physgun** shifts props and NPCs along `w` and rotates them in the w planes. Anything that is not "in phase" is hidden or drawn as a 3D slice, and can neither hit nor collide. The repo doubles as the addon folder.
 
 **Steam Workshop:** [FourD (3821760241)](https://steamcommunity.com/sharedfiles/filedetails/?id=3821760241)
-Entwickelt wird auf dem Mac, getestet auf einem Linux-srcds im Container. Lint, Tests und der Workshop-Upload laufen in GitHub Actions.
+Development happens on a Mac, testing on a Linux srcds in a container. Lint, tests and the Workshop upload run in GitHub Actions.
 
-| Ebene | Komponente | Aufgabe |
+| Layer | Component | Job |
 |---|---|---|
-| Mac (nativ) | Claude Code, VS Code + LuaLS, glualint (Rosetta), fastgmad | Schreiben, statisch prüfen, packen |
-| Mac (Rosetta) | GMod-Client, Branch `x86-64` + GModPatchTool | Ansehen, Client-/HUD-Tests |
-| OrbStack (`linux/amd64`) | `ceifa/garrysmod:debian-x64`, Bind-Mount | Hot-Reload, Server-Log, GLuaTest |
-| GitHub Actions | glualint, GLuaTest (`x86-64`), workshop-upload | Gate vor dem Merge, Release |
+| Mac (native) | Claude Code, VS Code + LuaLS, glualint (Rosetta), fastgmad | Write, check statically, package |
+| Mac (Rosetta) | GMod client, branch `x86-64` + GModPatchTool | View, client/HUD tests |
+| OrbStack (`linux/amd64`) | `ceifa/garrysmod:debian-x64`, bind mount | Hot reload, server log, GLuaTest |
+| GitHub Actions | glualint, GLuaTest (`x86-64`), workshop-upload | Gate before merge, release |
 
-Die Einrichtung von Mac-Client und Werkzeugen steht in [docs/setup-mac.md](docs/setup-mac.md).
+Setting up the Mac client and tools is covered in [docs/setup-mac.md](docs/setup-mac.md).
 
-## Schnellstart
+## Quick start
 
 ```bash
-docker compose up -d gmod          # Dev-Server, Repo ist als addons/myphys gemountet
-./tools/log.sh                     # Lua-Fehler der letzten 10 Minuten
-./tools/lint.sh                    # glualint über lua/
+docker compose up -d gmod          # dev server, repo is mounted as addons/myphys
+./tools/log.sh                     # Lua errors from the last 10 minutes
+./tools/lint.sh                    # glualint over lua/
 ./tools/test.sh lua/tests/fourd/sh_fourd_phase_spec.lua
 ```
 
-Im GMod-Client verbindest du dich über die **LAN-IP des Macs** (`ipconfig getifaddr en0`), zum Beispiel:
+In the GMod client, connect via the **Mac's LAN IP** (`ipconfig getifaddr en0`), for example:
 
 ```text
 connect <LAN-IP>:27115
 ```
 
-Danach im Spawnmenü unter *Weapons → FourD* die FourD Physgun nehmen (Bedienung siehe [FourD](#fourd)).
+Then pick the FourD Physgun from the spawn menu under *Weapons → FourD* (controls: see [FourD](#fourd)).
 
-Beim ersten Verbinden fragt ein Popup nach Zugriff aufs lokale Netzwerk, das musst du bestätigen. Folgende Fallstricke haben wir beobachtet:
+On first connect a popup asks for local network access; you have to allow it. We ran into these pitfalls:
 
-- `127.0.0.1` funktioniert nicht: Die Pakete von GMod kamen über Loopback nie im Container an, auch nicht über Port 27115.
-- Port 27015 ist auf dem Mac belegt: Den hält der GMod-Client selbst. Deshalb nutzt der Dev-Server 27115.
-- `sv_lan 0` ist nötig: Docker Desktop schreibt die Absender-IP auf eine öffentliche Adresse um, und mit `sv_lan 1` kommt sonst „LAN-Server sind nur für lokale Clients verfügbar“. `hide_server 1` hält den Server aus dem öffentlichen Serverbrowser heraus.
-- RCON hört nur auf `127.0.0.1:27115/tcp`.
+- `127.0.0.1` does not work: GMod's packets over loopback never reached the container, not even on port 27115.
+- Port 27015 is taken on the Mac: the GMod client itself holds it. That's why the dev server uses 27115.
+- `sv_lan 0` is required: Docker Desktop rewrites the source IP to a public address, and with `sv_lan 1` you otherwise get "LAN servers are restricted to local clients". `hide_server 1` keeps the server out of the public server browser.
+- RCON only listens on `127.0.0.1:27115/tcp`.
 
-Speicherst du eine Datei auf dem Mac, lädt der Server sie per Auto-Refresh (inotify) neu. Client-Dateien schickt er auch an verbundene Clients. Das ist mit Docker Desktop **geprüft** (17.10.2026): Ein Edit an einer `cl_`-Datei lief nach wenigen Sekunden im verbundenen Mac-Client, ohne Reconnect. Ein paar Hinweise dazu:
+When you save a file on the Mac, the server reloads it via auto-refresh (inotify). It also sends client files to connected clients. This was **verified** with Docker Desktop (2026-10-17): an edit to a `cl_` file was running in the connected Mac client within a few seconds, without reconnecting. A few notes:
 
-- Pro Speichervorgang kann die Datei mehrfach laufen, deshalb muss der Code refresh-sicher sein.
-- Bei offener Konsole oder ohne Fenster-Fokus zeigt GMod auf dem Mac teils ein veraltetes Bild.
+- A file can run several times per save, so the code must be refresh-safe.
+- With the console open or the window unfocused, GMod on the Mac sometimes shows a stale image.
 
-Ob eine Datei neu geladen wurde, prüfst du am einfachsten mit einer temporären `print`-Zeile, die im Client-`console.log` auftaucht.
+The easiest way to check whether a file was reloaded is a temporary `print` line that shows up in the client's `console.log`.
 
-Greift Auto-Refresh nicht, lädst du so neu:
+If auto-refresh doesn't kick in, reload like this:
 
 ```bash
 ./tools/reload.sh lua/fourd/sv_fourd_npc.lua
@@ -53,70 +53,70 @@ Greift Auto-Refresh nicht, lädst du so neu:
 
 ## FourD
 
-Waffe *FourD Physgun* (Spawnmenü → Weapons → FourD):
+Weapon *FourD Physgun* (spawn menu → Weapons → FourD):
 
-| Eingabe | Wirkung |
+| Input | Effect |
 |---|---|
-| Links halten | Prop greifen (wie die Physgun), Mausrad = Abstand |
-| E + Maus | gehaltenes Objekt in den Ebenen (rechts, w) und (oben, w) drehen, Shift rastet auf 45° |
-| R | R4 des gehaltenen Objekts zurücksetzen |
-| Rechts halten | Ziel wählen, auch NPCs (Rechte über `PhysgunPickup`) |
-| Rechts + Mausrad | `t` des Ziels ±0,5 pro Raste, Shift ±0,1 |
-| Rechts + R | `t` des Ziels auf das eigene `t` |
-| Rechts + E + Maus | R4 des Ziels drehen |
+| Hold left | Grab a prop (like the physgun), mouse wheel = distance |
+| E + mouse | Rotate the held object in the planes (right, w) and (up, w); Shift snaps to 45° |
+| R | Reset the held object's R4 |
+| Hold right | Select a target, NPCs included (permissions via `PhysgunPickup`) |
+| Right + mouse wheel | Target's `t` ±0.5 per notch, Shift ±0.1 |
+| Right + R | Set the target's `t` to your own `t` |
+| Right + E + mouse | Rotate the target's R4 |
 
-- **In Phase** heißt: Der 3D-Schnitt des Körpers (Box × Dicke `d` in `w`, gedreht mit R4) im Raum des Spielers ist nicht leer. Ohne Drehung bedeutet das |Δt| ≤ d/2.
-- **NPCs außerhalb der Phase** sind unsichtbar, samt Waffe und Ragdoll. Sie richten keinen Schaden an und nehmen keinen, kollidieren nicht mit dem Spieler und behandeln ihn als neutral. In Phase gelten wieder die ursprünglichen Beziehungen.
-- **Props** behalten ohne Drehung ihr normales Verhalten und werden nur gedreht geschnitten dargestellt.
+- **In phase** means: the 3D slice of the body (box × thickness `d` in `w`, rotated by R4) in the player's space is not empty. Without rotation this means |Δt| ≤ d/2.
+- **NPCs out of phase** are invisible, including their weapon and ragdoll. They neither deal nor take damage, don't collide with the player and treat them as neutral. Back in phase, the original relationships apply again.
+- **Props** keep their normal behavior without rotation and are only drawn sliced when rotated.
 
-| ConVar | Default | Realm | Bedeutung |
+| ConVar | Default | Realm | Meaning |
 |---|---|---|---|
-| `fourd_thickness` | 2 | Server, repliziert | Dicke `d` aller Körper in `w` |
-| `fourd_max_t` | 64 | Server, repliziert | Grenze für \|t\| bei der Physgun |
-| `fourd_default_t` | 0 | Server | `t` neuer Entities |
-| `fourd_cl_slice` | 1 | Client | Schnitt gedrehter Objekte zeichnen |
-| `fourd_cl_npc_hide` | 1 | Client | NPCs außerhalb der Phase ausblenden |
+| `fourd_thickness` | 2 | Server, replicated | Thickness `d` of all bodies in `w` |
+| `fourd_max_t` | 64 | Server, replicated | Limit for \|t\| with the physgun |
+| `fourd_default_t` | 0 | Server | `t` of new entities |
+| `fourd_cl_slice` | 1 | Client | Draw the slice of rotated objects |
+| `fourd_cl_npc_hide` | 1 | Client | Hide NPCs that are out of phase |
 
-Herleitung, Entscheidungen und Näherungen stehen in [docs/fourd-rotation.md](docs/fourd-rotation.md).
+Derivation, decisions and approximations are in [docs/fourd-rotation.md](docs/fourd-rotation.md).
 
 ## Layout
 
 ```text
 lua/autorun/fourd_init.lua             Loader (shared)
-lua/fourd/sh_fourd*.lua                FourD-Kern: t, 4D-Mathe, Phasenregel, NPC-Paare (shared)
-lua/fourd/sv_fourd*.lua                t/R4 setzen, NPC-Schaden, Kollision, Beziehungen
-lua/fourd/cl_fourd*.lua                Schnittdarstellung, Ausblenden außerhalb der Phase
+lua/fourd/sh_fourd*.lua                FourD core: t, 4D math, phase rule, NPC pairs (shared)
+lua/fourd/sv_fourd*.lua                Setting t/R4, NPC damage, collision, relationships
+lua/fourd/cl_fourd*.lua                Slice rendering, hiding out-of-phase bodies
 lua/weapons/fourd_physgun/             FourD Physgun
-lua/tests/fourd/                       GLuaTest-Specs (nicht im Workshop-Paket)
+lua/tests/fourd/                       GLuaTest specs (not in the Workshop package)
 tools/                                 lint, log, test, rcon, reload, package
-.claude/                               Rules, Hooks, Skills, Agents für Claude Code
+.claude/                               Rules, hooks, skills, agents for Claude Code
 ```
 
 ## Claude Code
 
-- `CLAUDE.md` bleibt kurz. Realm-spezifische Regeln liegen in `.claude/rules/*.md` und werden nur bei passenden Dateien geladen.
-- Hook `lint-lua.sh` lintet jede bearbeitete `.lua`-Datei. Bei Exit 2 korrigiert Claude selbst.
-- Hook `trim-logs.sh` kürzt `docker compose logs …` auf Fehlerzeilen.
-- Skills: `/gmod-log` und `/gmod-test <datei>` (läuft im Haiku-Subagent `gmod-test-runner`).
-- Agents: `glua-reviewer` (read-only Review), `wiki-researcher` (nur wiki.facepunch.com).
-- Empfohlene Plugins: `/plugin install lua-lsp@claude-plugins-official` (braucht `lua-language-server` im PATH). Dazu als optionaler GLua-API-Skill `/plugin marketplace add Alleexxi/glua-claude-skill` und dann `/plugin install glua@glua-claude-skill`.
+- `CLAUDE.md` stays short. Realm-specific rules live in `.claude/rules/*.md` and are only loaded for matching files.
+- Hook `lint-lua.sh` lints every edited `.lua` file. On exit 2, Claude fixes it itself.
+- Hook `trim-logs.sh` trims `docker compose logs …` down to error lines.
+- Skills: `/gmod-log` and `/gmod-test <file>` (runs in the Haiku subagent `gmod-test-runner`).
+- Agents: `glua-reviewer` (read-only review), `wiki-researcher` (wiki.facepunch.com only).
+- Recommended plugins: `/plugin install lua-lsp@claude-plugins-official` (needs `lua-language-server` in PATH). Optionally, as a GLua API skill, `/plugin marketplace add Alleexxi/glua-claude-skill` followed by `/plugin install glua@glua-claude-skill`.
 
 ## Release
 
-1. `workshop/icon.jpg` (512×512, Baseline-JPEG) ist ein Platzhalter und darf ersetzt werden.
-2. Erledigt, die Workshop-ID ist `3821760241`. Für neue Items gilt: Mach den Erst-Upload einmal lokal mit `./tools/package.sh` und `fastgmad publish …`. Ohne fastgmad gehen auch `gmad` und `gmpublish` aus dem GMod-Client (`GarrysMod_Signed.app/Contents/MacOS/`). Dabei entsteht die Workshop-ID.
-3. Die Repo-Variable `WORKSHOP_ID` ist gesetzt. Fehlen noch die Secrets `STEAM_USERNAME` und `STEAM_VDF`; erst mit ihnen lädt jedes GitHub-Release automatisch hoch, ohne sie schlägt der Release-Job fehl.
+1. `workshop/icon.jpg` (512×512, baseline JPEG) is a placeholder and may be replaced.
+2. Done, the Workshop ID is `3821760241`. For new items: do the first upload once locally with `./tools/package.sh` and `fastgmad publish …`. Without fastgmad, `gmad` and `gmpublish` from the GMod client (`GarrysMod_Signed.app/Contents/MacOS/`) work too. This creates the Workshop ID.
+3. The repo variable `WORKSHOP_ID` is set. The secrets `STEAM_USERNAME` and `STEAM_VDF` are still missing; only with them does every GitHub release upload automatically, without them the release job fails.
 
 ## Optional: VPhysics-Jolt
 
-Entpacke das Linux64-Release von [VPhysics-Jolt](https://github.com/misyltoad/VPhysics-Jolt/releases) nach `docker/jolt/` und starte dann:
+Extract the Linux64 release of [VPhysics-Jolt](https://github.com/misyltoad/VPhysics-Jolt/releases) into `docker/jolt/`, then start:
 
 ```bash
 docker compose --profile jolt up -d gmod-jolt
 ```
 
-Der Server läuft auf Port 27016. Teste jede Physikfunktion gegen Standard-VPhysics **und** gegen Jolt.
+The server runs on port 27016. Test every physics feature against stock VPhysics **and** against Jolt.
 
-## Lizenz
+## License
 
 [MIT](LICENSE)

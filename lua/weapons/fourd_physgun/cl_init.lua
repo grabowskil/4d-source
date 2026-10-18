@@ -33,13 +33,13 @@ function SWEP:DrawHUD()
 
     local lines = {
         string.format("FourD  %s #%d%s", ent:GetClass(), ent:EntIndex(),
-            IsValid(shift) and "  [Ziel]" or ""),
-        string.format("t = %.2f   (Betrachter %.2f)", tEnt, tMe),
-        string.format("Δt = %.2f   in Phase: %s   (d = %.2f)", tEnt - tMe,
-            FourD.InPhase(tEnt, tMe, d) and "ja" or "nein", d),
-        string.format("R4: alpha %.1f°  beta %.1f°  w-Neigung %.1f°", alpha, beta, tilt),
-        string.format("Drag: rechts-w %.1f°  oben-w %.1f°", self:GetDragX(), self:GetDragY()),
-        string.format("w-Zeile: %.3f %.3f %.3f %.3f", m[4][1], m[4][2], m[4][3], m[4][4]),
+            IsValid(shift) and "  [target]" or ""),
+        string.format("t = %.2f   (viewer %.2f)", tEnt, tMe),
+        string.format("Δt = %.2f   in phase: %s   (d = %.2f)", tEnt - tMe,
+            FourD.InPhase(tEnt, tMe, d) and "yes" or "no", d),
+        string.format("R4: alpha %.1f°  beta %.1f°  w tilt %.1f°", alpha, beta, tilt),
+        string.format("Drag: right-w %.1f°  up-w %.1f°", self:GetDragX(), self:GetDragY()),
+        string.format("w row: %.3f %.3f %.3f %.3f", m[4][1], m[4][2], m[4][3], m[4][4]),
     }
     local x, y = ScrW() * 0.5 + 40, ScrH() * 0.5 + 40
     for i, text in ipairs(lines) do

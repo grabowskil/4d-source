@@ -7,7 +7,7 @@ FourD.ClNpcHidden = FourD.ClNpcHidden or {}   -- ent -> true, solange wir SetNoD
 FourD.ClRagdolls = FourD.ClRagdolls or {}     -- clientseitiges Ragdoll -> { t, r } des NPCs
 
 local cvHide = CreateClientConVar("fourd_cl_npc_hide", "1", true, false,
-    "NPCs außerhalb der Phase ausblenden (0 = aus)", 0, 1)
+    "Hide NPCs that are out of phase (0 = off)", 0, 1)
 
 local UPDATE_INTERVAL = 0.1
 local lastKey = setmetatable({}, { __mode = "k" })   -- ent -> zuletzt gesehenes "t|R4"

@@ -6,7 +6,7 @@ FourD.ClTracked = FourD.ClTracked or {}   -- ent -> true, solange R4 nicht die I
 local M = FourD.Math
 
 local cvSlice = CreateClientConVar("fourd_cl_slice", "1", true, false,
-    "Schnitt gedrehter Objekte annähernd darstellen (0 = aus)", 0, 1)
+    "Draw an approximate slice of rotated objects (0 = off)", 0, 1)
 local cvThickness = GetConVar("fourd_thickness")
 
 local UPDATE_INTERVAL = 0.1

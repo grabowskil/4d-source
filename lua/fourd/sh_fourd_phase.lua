@@ -11,7 +11,7 @@ local STEP, STEP_FINE = 0.5, 0.1
 
 -- Obergrenze |t| für die Steuerung der FourD Physgun. Repliziert, damit das HUD sie kennt.
 CreateConVar("fourd_max_t", "64", { FCVAR_ARCHIVE, FCVAR_REPLICATED },
-    "Maximaler Betrag von t beim Verschieben per FourD Physgun", 0, 4096)
+    "Maximum absolute t when shifting with the FourD Physgun", 0, 4096)
 
 local function isFinite(v)
     return isnumber(v) and v == v and v ~= math.huge and v ~= -math.huge

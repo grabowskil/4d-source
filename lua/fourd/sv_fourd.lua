@@ -3,7 +3,7 @@ FourD = FourD or {}
 FourD.Values = FourD.Values or {}    -- ent -> t; überlebt lua_refresh_file
 
 local cvDefault = CreateConVar("fourd_default_t", "0", FCVAR_ARCHIVE,
-    "Default-Wert der 4. Koordinate t für neue Entities")
+    "Default value of the 4th coordinate t for new entities")
 
 local function isFiniteNumber(v)
     return isnumber(v) and v == v and v ~= math.huge and v ~= -math.huge
